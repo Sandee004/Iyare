@@ -1,9 +1,8 @@
-"use client";
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,10 +15,33 @@ export default function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Signup Data:", formData);
-    // Here, you would send data to your backend for user registration
+
+    const url = "http://localhost:5000/api/signup";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMessage = error.message || "Signup failed";
+        alert(errorMessage);
+        return;
+      }
+      console.log("Signup successful");
+      navigate("/home");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (

@@ -1,22 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
+    phoneNumber: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login Data:", formData);
-    // Here, you would send data to your backend for authentication
+
+    const url = "http://localhost:5000/api/login";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMessage = error.message || "Signup failed";
+        alert(errorMessage);
+        return;
+      }
+      console.log("Login successful");
+      navigate("/home");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -39,6 +63,21 @@ export default function Login() {
             required
             className="w-full p-2 border border-gray-300 rounded-md"
             placeholder="Enter your email"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phoneNumber" className="block font-medium">
+            Phone Number
+          </label>
+          <input
+            id="phoneNumber"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            required
+            className="w-full p-2 border border-gray-300 rounded-md"
+            placeholder="Enter your phone number"
           />
         </div>
 
