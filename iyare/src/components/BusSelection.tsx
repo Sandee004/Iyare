@@ -42,7 +42,12 @@ const BusSelection = () => {
 
   const handleContinue = () => {
     if (selectedBus) {
-      navigate(`/seat-selection?busId=${selectedBus}`);
+      const departureDate = new URLSearchParams(window.location.search).get(
+        "departureDate"
+      );
+      navigate(
+        `/seat-selection?busId=${selectedBus}&departureDate=${departureDate}`
+      );
     }
   };
 

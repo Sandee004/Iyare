@@ -9,7 +9,7 @@ export default function SeatSelection() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const busId = searchParams.get("busId");
-
+  //const departureDate = searchParams.get("departureDate");
   const handleSeatSelect = (seatNumber: number) => {
     if (selectedSeats.includes(seatNumber)) {
       setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
@@ -20,8 +20,12 @@ export default function SeatSelection() {
 
   const handleContinue = () => {
     if (selectedSeats.length > 0) {
-      console.log("Booking submitted:", { busId, seats: selectedSeats });
-      navigate("/booking-confirmation");
+      const departureDate = searchParams.get("departureDate");
+      navigate(
+        `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
+          ","
+        )}&departureDate=${departureDate}`
+      );
     }
   };
 

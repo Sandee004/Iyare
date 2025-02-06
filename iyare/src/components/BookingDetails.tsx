@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const BookingDetails = () => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
@@ -18,7 +18,7 @@ const BookingDetails = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search submitted:", searchData);
-    navigate("/bus-selection");
+    //navigate(`/bus-selection?departureDate=${searchData.date}`);
   };
 
   return (
