@@ -1,33 +1,69 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
-
-//const totalSeats = 14; // Adjusted to match your request
-const unavailableSeats = [3, 7, 10]; // Example of booked seats
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 export default function SeatSelection() {
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+
+  const [unavailableSeats, setUnavailableSeats] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const busId = searchParams.get("busId");
-  //const departureDate = searchParams.get("departureDate");
+  const { busId } = useParams();
+
+  // Fetch available seats from the backend
+  useEffect(() => {
+    const fetchSeats = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/buses/${busId}/seats`
+        );
+        const data = await response.json();
+        //setUnavailableSeats(data.unavailableSeats); // Assume API returns unavailable seats
+        setUnavailableSeats(data.unavailableSeats || []);
+      } catch (error) {
+        console.error("Error fetching seats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSeats();
+  }, [busId]);
+
   const handleSeatSelect = (seatNumber: number) => {
-    if (selectedSeats.includes(seatNumber)) {
+    //if (selectedSeats.includes(seatNumber)) {
+    if (Array.isArray(selectedSeats) && selectedSeats.includes(seatNumber)) {
       setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
     } else {
       setSelectedSeats([...selectedSeats, seatNumber]);
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedSeats.length > 0) {
-      const departureDate = searchParams.get("departureDate");
-      navigate(
-        `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
-          ","
-        )}&departureDate=${departureDate}`
-      );
+      try {
+        const response = await fetch(`http://localhost:5000/book-seats`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            busId,
+            seats: selectedSeats,
+          }),
+        });
+
+        if (response.ok) {
+          navigate(`/booking-confirmation/${busId}`);
+        } else {
+          alert("Failed to book seats. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error booking seats:", error);
+      }
     }
   };
+
+  if (loading) {
+    return <p className="text-center text-lg">Loading seats...</p>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -47,12 +83,11 @@ export default function SeatSelection() {
 
       {/* Bus Layout */}
       <div className="flex flex-col items-center space-y-4 bg-gray-100 p-6 rounded-lg shadow-md">
-        {/* Driver & Assistant Row */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-gray-400 text-white p-3 rounded text-center">
             🚍 Driver
           </div>
-          <div></div> {/* Empty space */}
+          <div></div>
           <button
             className={`w-12 h-12 rounded-md ${
               selectedSeats.includes(1) ? "bg-green-500" : "bg-gray-300"

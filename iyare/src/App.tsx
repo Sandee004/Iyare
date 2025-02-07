@@ -18,8 +18,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/booking" element={<BookingDetails />} />
         <Route path="/bus-selection" element={<BusSelection />} />
-        <Route path="/seat-selection" element={<SeatSelection />} />
-        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+        <Route path="/seat-selection/:busId" element={<SeatSelection />} />
+        <Route
+          path="/booking-confirmation/:busId"
+          element={<BookingConfirmation />}
+        />
       </Routes>
     </Router>
   );

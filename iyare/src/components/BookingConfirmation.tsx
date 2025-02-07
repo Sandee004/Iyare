@@ -1,7 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import axios from "axios";
+
+interface User {
+  name: string;
+  phoneNumber: string;
+  nextOfKinName: string;
+  nextOfKinPhoneNumber: string;
+}
 
 export default function BookingConfirmation() {
   const navigate = useNavigate();
@@ -11,12 +19,31 @@ export default function BookingConfirmation() {
   const seats = searchParams.get("seats");
   const departureDate = searchParams.get("departureDate");
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<User>({
     name: "",
     phoneNumber: "",
     nextOfKinName: "",
     nextOfKinPhoneNumber: "",
   });
+
+  useEffect(() => {
+    axios
+      .get("/api/user")
+      .then((response) => {
+        if (response.data.user) {
+          setFormData((prevData) => ({
+            ...prevData,
+            name: response.data.user.name,
+            phoneNumber: response.data.user.phoneNumber,
+            nextOfKinName: response.data.user.nextOfKinName,
+            nextOfKinPhoneNumber: response.data.user.nextOfKinPhoneNumber,
+          }));
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching user:", error);
+      });
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,18 +51,23 @@ export default function BookingConfirmation() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Booking submitted:", {
-      ...formData,
-      busId,
-      seats,
-      departureDate,
-    });
-    navigate("/payment");
+    axios
+      .post("/api/book-seat", {
+        ...formData,
+        busId,
+        seats,
+        departureDate,
+      })
+      .then(() => {
+        navigate("/payment");
+      })
+      .catch((error) => {
+        console.error("Booking error:", error);
+      });
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {/* Navbar with Back Button */}
       <nav className="mb-6">
         <Link
           to="/seat-selection"
@@ -61,7 +93,6 @@ export default function BookingConfirmation() {
             onChange={handleInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Enter your full name"
           />
         </div>
 
@@ -76,7 +107,6 @@ export default function BookingConfirmation() {
             onChange={handleInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Enter your phone number"
           />
         </div>
 
@@ -91,7 +121,6 @@ export default function BookingConfirmation() {
             onChange={handleInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Enter next of kin's name"
           />
         </div>
 
@@ -106,7 +135,6 @@ export default function BookingConfirmation() {
             onChange={handleInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Enter next of kin's phone number"
           />
         </div>
 
