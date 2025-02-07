@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const BookingDetails = () => {
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   const [searchData, setSearchData] = useState({
-    from: "",
-    to: "",
-    date: "",
+    travellingFrom: "",
+    travellingTo: "",
+    departureDate: "",
   });
 
   const handleInputChange = (
@@ -15,10 +15,41 @@ const BookingDetails = () => {
     setSearchData({ ...searchData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search submitted:", searchData);
-    //navigate(`/bus-selection?departureDate=${searchData.date}`);
+
+    const selectedDate = new Date(searchData.departureDate);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < currentDate) {
+      alert("Departure date cannot be in the past.");
+      return;
+    }
+
+    const url = "http://localhost:5000/api/travel";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(searchData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMessage = error.message || "Booking failed";
+        alert(errorMessage);
+        return;
+      }
+      navigate("/bus-selection");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -41,7 +72,7 @@ const BookingDetails = () => {
           </label>
           <select
             id="from"
-            name="from"
+            name="travellingFrom"
             onChange={handleInputChange}
             className="border p-2 rounded w-full"
             required
@@ -60,7 +91,7 @@ const BookingDetails = () => {
           </label>
           <select
             id="to"
-            name="to"
+            name="travellingTo"
             onChange={handleInputChange}
             className="border p-2 rounded w-full"
             required
@@ -79,9 +110,9 @@ const BookingDetails = () => {
           </label>
           <input
             id="date"
-            name="date"
+            name="departureDate"
             type="date"
-            value={searchData.date}
+            value={searchData.departureDate}
             onChange={handleInputChange}
             className="border p-2 rounded w-full"
             required

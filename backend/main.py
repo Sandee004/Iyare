@@ -30,9 +30,20 @@ class Users(db.Model):
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     phoneNumber = db.Column(db.Integer, nullable=False, unique=True)
-    nextOfKinName = db.Column(db.String(20))
-    nextOfKinPhoneNumber = db.Column(db.String(100), nullable=False)
+    nextOfKinName = db.Column(db.String(20), nullable=False)
+    nextOfKinPhoneNumber = db.Column(db.Integer, nullable=False)
 
+    travels = db.relationship("TravelDetails", backref="traveler", lazy=True)
+
+class TravelDetails(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    travellingFrom = db.Column(db.String(50), nullable=False)
+    travellingTo = db.Column(db.String(50), nullable=False)
+    departureDate = db.Column(db.DateTime, nullable=False)
+    seatChosen = db.Column(db.String(10), default="Not chosen")
+
+    # Linking TravelDetails to Users with correct backref
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
 
 @app.route("/")
 def home():
@@ -82,6 +93,28 @@ def login():
     access_token = create_access_token(identity=user.id)
     print("Login successful")
     return jsonify(access_token=access_token), 200
+
+
+@app.route("/api/travel", methods=["POST"])
+def traveldetails():
+    travellingFrom = request.json.get("travellingFrom")
+    travellingTo = request.json.get("travellingTo")
+    departureDate = request.json.get("departureDate")
+    seatChosen = request.json.get("seatChosen")
+
+    if not travellingFrom or not travellingTo or not departureDate:
+        return jsonify({"message":"Fill all fields"}), 400
+
+    try:
+        departureDate = datetime.strptime(departureDate, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"message": "Invalid date format"}), 400
+    
+    new_travel = TravelDetails(travellingFrom=travellingFrom, travellingTo=travellingTo, departureDate=departureDate)
+    db.session.add(new_travel)
+    db.session.commit()
+    print("Travel details added")
+    return jsonify({"message": "Travel details added successfully"}), 201
 
 
 if __name__ == "__main__":
