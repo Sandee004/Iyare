@@ -39,7 +39,7 @@ class Seats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     seatNumber = db.Column(db.String(10), nullable=False)
     is_booked = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)  # Track who booked
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)  # Track who booked
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=False)
 
 
@@ -51,7 +51,7 @@ class TravelDetails(db.Model):
     
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=True)
     seat_id = db.Column(db.Integer, db.ForeignKey("seats.id"), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
 
 @app.route("/api/signup", methods=["POST"])
@@ -72,7 +72,12 @@ def signup():
     db.session.add(new_user)
     db.session.commit()
     
-    return jsonify({"message": "User created successfully"}), 201
+    access_token = create_access_token(identity=new_user.id)
+
+    return jsonify({
+        "message": "User created successfully",
+        "access_token": access_token
+    }), 201
 
 
 @app.route("/api/login", methods=["POST"])

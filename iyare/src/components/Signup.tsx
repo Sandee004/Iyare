@@ -36,8 +36,15 @@ export default function Signup() {
         alert(errorMessage);
         return;
       }
-      console.log("Signup successful");
-      navigate("/home");
+      const data = await response.json();
+      if (response.ok) {
+        // Save token to localStorage
+        localStorage.setItem("access_token", data.access_token);
+        console.log("Signup successful! Token saved.");
+        navigate("/home");
+      } else {
+        alert(data.message);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred. Please try again.");

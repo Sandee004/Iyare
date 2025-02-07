@@ -6,8 +6,9 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleBookNow = () => {
-    const isAuthenticated = !!localStorage.getItem("token"); // Directly check token
-    if (!isAuthenticated) {
+    const token = localStorage.getItem("access_token");
+    //const isAuthenticated = !localStorage.getItem("token"); // Directly check token
+    if (!token) {
       setShowModal(true);
     } else {
       navigate("/booking");
