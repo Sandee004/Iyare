@@ -39,7 +39,7 @@ class Seats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     seatNumber = db.Column(db.String(10), nullable=False)
     is_booked = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)  # Track who booked
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=False)
 
 
@@ -48,6 +48,7 @@ class TravelDetails(db.Model):
     travellingFrom = db.Column(db.String(50), nullable=False)
     travellingTo = db.Column(db.String(50), nullable=False)
     departureDate = db.Column(db.DateTime, nullable=False)
+    route = db.Column(db.String(50), nullable=False)
     
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=True)
     seat_id = db.Column(db.Integer, db.ForeignKey("seats.id"), nullable=True)
@@ -71,12 +72,10 @@ def signup():
     new_user = Users(**data)
     db.session.add(new_user)
     db.session.commit()
-    
-    access_token = create_access_token(identity=new_user.id)
+    print("Signup data gotten and stored")    
 
     return jsonify({
         "message": "User created successfully",
-        "access_token": access_token
     }), 201
 
 
@@ -93,8 +92,38 @@ def login():
     if user.phoneNumber != phoneNumber:
         return jsonify({"message": "Invalid credentials"}), 401
 
+    print("Login data gotten. Logging the user in")
+
     access_token = create_access_token(identity=user.id)
     return jsonify(access_token=access_token), 200
+
+
+@app.route("/api/travel", methods=["POST"])
+@jwt_required()
+def travelDetails():
+    user_id = get_jwt_identity()
+    data = request.json
+    required_fields = ["travellingFrom", "travellingTo", "departureDate"]
+    route = f"{data['travellingFrom']} - {data['travellingTo']}"
+    print(route)
+    
+    if not all(data.get(field) for field in required_fields):
+        return jsonify({"message": "Fill all fields"}), 400
+
+    new_travel = TravelDetails(
+        travellingFrom=data["travellingFrom"],
+        travellingTo=data["travellingTo"],
+        departureDate=datetime.strptime(data["departureDate"], "%Y-%m-%d"),  # Ensure correct date format
+        route=route,
+        user_id=user_id,
+    )
+    db.session.add(new_travel)
+    db.session.commit()
+    print("Travel details stored")    
+
+    return jsonify({
+        "message": "User created successfully",
+    }), 201
 
 
 @app.route("/buses/<int:bus_id>/seats", methods=["GET"])

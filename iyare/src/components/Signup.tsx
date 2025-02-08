@@ -36,18 +36,29 @@ export default function Signup() {
         alert(errorMessage);
         return;
       }
-      const data = await response.json();
-      if (response.ok) {
-        // Save token to localStorage
-        localStorage.setItem("access_token", data.access_token);
-        console.log("Signup successful! Token saved.");
+
+      const { email, phoneNumber } = formData;
+      const loginResponse = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, phoneNumber }),
+      });
+
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        localStorage.setItem("token", loginData.access_token);
         navigate("/home");
       } else {
-        alert(data.message);
+        alert(
+          "Signup successful, but auto-login failed. Please log in manually."
+        );
+        navigate("/login");
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("An error occurred. Please try again.");
+      console.error("Error submitting signup:", error);
+      alert("An unexpected error occurred. Please try again later.");
     }
   };
 

@@ -18,6 +18,12 @@ const BookingDetails = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search submitted:", searchData);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
     const selectedDate = new Date(searchData.departureDate);
     const currentDate = new Date();
@@ -32,6 +38,7 @@ const BookingDetails = () => {
     const options = {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(searchData),

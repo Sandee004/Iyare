@@ -35,7 +35,9 @@ export default function Login() {
         alert(errorMessage);
         return;
       }
-      console.log("Login successful");
+      const data = await response.json();
+      localStorage.setItem("token", data.access_token);
+      console.log(localStorage.getItem("token"));
       navigate("/home");
     } catch (error) {
       console.error("Error submitting form:", error);
