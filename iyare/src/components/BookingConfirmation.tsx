@@ -52,7 +52,7 @@ export default function BookingConfirmation() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     axios
-      .post("/api/book-seat", {
+      .post("/api/confirm-booking", {
         ...formData,
         busId,
         seats,

@@ -7,6 +7,7 @@ import SeatSelection from "./components/SeatSelection";
 import BookingConfirmation from "./components/BookingConfirmation";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
+import Payment from "./components/Payment";
 
 function App() {
   return (
@@ -19,10 +20,8 @@ function App() {
         <Route path="/booking" element={<BookingDetails />} />
         <Route path="/bus-selection" element={<BusSelection />} />
         <Route path="/seat-selection/:busId" element={<SeatSelection />} />
-        <Route
-          path="/booking-confirmation/:busId"
-          element={<BookingConfirmation />}
-        />
+        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+        <Route path="/payment" element={<Payment />} />
       </Routes>
     </Router>
   );

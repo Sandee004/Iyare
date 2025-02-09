@@ -3,21 +3,22 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 
 export default function SeatSelection() {
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-
   const [unavailableSeats, setUnavailableSeats] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
   const { busId } = useParams();
+  console.log("Bus ID from URL:", busId);
+  const totalSeats = 14; // Adjust this based on the bus configuration
 
-  // Fetch available seats from the backend
+  // Fetch unavailable seats from the backend
   useEffect(() => {
     const fetchSeats = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/buses/${busId}/seats`
+          `http://localhost:5000/api/buses/${busId}/seats`
         );
         const data = await response.json();
-        //setUnavailableSeats(data.unavailableSeats); // Assume API returns unavailable seats
         setUnavailableSeats(data.unavailableSeats || []);
       } catch (error) {
         console.error("Error fetching seats:", error);
@@ -30,37 +31,55 @@ export default function SeatSelection() {
   }, [busId]);
 
   const handleSeatSelect = (seatNumber: number) => {
-    //if (selectedSeats.includes(seatNumber)) {
-    if (Array.isArray(selectedSeats) && selectedSeats.includes(seatNumber)) {
-      setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
-    } else {
-      setSelectedSeats([...selectedSeats, seatNumber]);
-    }
+    setSelectedSeats((prevSelected) =>
+      prevSelected.includes(seatNumber)
+        ? prevSelected.filter((seat) => seat !== seatNumber)
+        : [...prevSelected, seatNumber]
+    );
   };
 
   const handleContinue = async () => {
-    if (selectedSeats.length > 0) {
-      try {
-        const response = await fetch(`http://localhost:5000/book-seats`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            busId,
-            seats: selectedSeats,
-          }),
-        });
-
-        if (response.ok) {
-          navigate(`/booking-confirmation/${busId}`);
-        } else {
-          alert("Failed to book seats. Please try again.");
-        }
-      } catch (error) {
-        console.error("Error booking seats:", error);
+    if (selectedSeats.length === 0) return;
+  
+    try {
+      const departureDate = new Date().toISOString().split("T")[0];
+      const token = localStorage.getItem("token");
+  
+      const payload = {
+        busId,
+        seats: selectedSeats,
+        departureDate,
+      };
+  
+      console.log("Sending payload:", payload); // Add this to debug
+  
+      const response = await fetch(`http://localhost:5000/api/book-seat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const responseData = await response.json();
+      console.log("Response:", responseData); // Add this to debug
+  
+      if (response.ok) {
+        navigate(
+          `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
+            ","
+          )}&departureDate=${departureDate}`
+        );
+      } else {
+        alert(responseData.message || "Failed to book seats. Please try again.");
       }
+    } catch (error) {
+      console.error("Error booking seats:", error);
     }
   };
 
+  
   if (loading) {
     return <p className="text-center text-lg">Loading seats...</p>;
   }
@@ -83,7 +102,8 @@ export default function SeatSelection() {
 
       {/* Bus Layout */}
       <div className="flex flex-col items-center space-y-4 bg-gray-100 p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-3 gap-4">
+        {/* Driver Seat */}
+        <div className="grid grid-cols-3 gap-4 items-center">
           <div className="bg-gray-400 text-white p-3 rounded text-center">
             🚍 Driver
           </div>
@@ -99,24 +119,26 @@ export default function SeatSelection() {
           </button>
         </div>
 
-        {/* Passenger Rows */}
+        {/* Passenger Seats */}
         <div className="grid grid-cols-3 gap-6">
-          {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((seatNumber) => (
-            <button
-              key={seatNumber}
-              className={`w-12 h-12 text-white font-bold rounded-md ${
-                unavailableSeats.includes(seatNumber)
-                  ? "bg-red-500 cursor-not-allowed"
-                  : selectedSeats.includes(seatNumber)
-                  ? "bg-green-500"
-                  : "bg-gray-300 hover:bg-gray-400"
-              }`}
-              onClick={() => handleSeatSelect(seatNumber)}
-              disabled={unavailableSeats.includes(seatNumber)}
-            >
-              {seatNumber}
-            </button>
-          ))}
+          {Array.from({ length: totalSeats - 1 }, (_, i) => i + 2).map(
+            (seatNumber) => (
+              <button
+                key={seatNumber}
+                className={`w-12 h-12 text-white font-bold rounded-md ${
+                  unavailableSeats.includes(seatNumber)
+                    ? "bg-red-500 cursor-not-allowed"
+                    : selectedSeats.includes(seatNumber)
+                    ? "bg-green-500"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                onClick={() => handleSeatSelect(seatNumber)}
+                disabled={unavailableSeats.includes(seatNumber)}
+              >
+                {seatNumber}
+              </button>
+            )
+          )}
         </div>
       </div>
 
