@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,6 +19,7 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Signup Data:", formData);
+    setIsLoading(true);
 
     const url = "https://iyare-backend.onrender.com/api/signup";
     const options = {
@@ -63,6 +65,8 @@ export default function Signup() {
     } catch (error) {
       console.error("Error submitting signup:", error);
       alert("An unexpected error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -166,6 +170,12 @@ export default function Signup() {
           Login
         </Link>
       </p>
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
+      )}
     </div>
   );
 }

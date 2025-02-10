@@ -12,7 +12,7 @@ const BusSelection = () => {
 
   const [buses, setBuses] = useState<Bus[]>([]);
   const [selectedBus, setSelectedBus] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const location = useLocation();
@@ -25,7 +25,7 @@ const BusSelection = () => {
   useEffect(() => {
     if (!routeId) {
       setError("No route selected.");
-      setLoading(false);
+      setIsLoading(false);
       return;
     }
 
@@ -42,7 +42,7 @@ const BusSelection = () => {
       } catch (err) {
         setError((err as Error).message);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -59,7 +59,6 @@ const BusSelection = () => {
     }
   };
 
-  if (loading) return <p className="text-center">Loading buses...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
@@ -93,10 +92,16 @@ const BusSelection = () => {
       <button
         onClick={handleContinue}
         disabled={!selectedBus}
-        className="w-full bg-red-600 text-white font-semibold py-2 rounded hover:bg-red-700"
+        className="w-full bg-red-600 text-white font-semibold py-2 rounded hover:bg-red-700 mt-5"
       >
         Continue to Seat Selection
       </button>
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
+      )}
     </div>
   );
 };

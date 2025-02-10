@@ -9,6 +9,7 @@ export default function Login() {
     email: "",
     phoneNumber: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,6 +18,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login Data:", formData);
+    setIsLoading(true);
 
     const url = "https://iyare-backend.onrender.com/api/login";
     const options = {
@@ -42,6 +44,8 @@ export default function Login() {
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false); // Set loading to false after API call, regardless of success/failure
     }
   };
 
@@ -100,6 +104,12 @@ export default function Login() {
           Create one
         </Link>
       </p>
+
+      {isLoading && ( // Loading overlay
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
+      )}
     </div>
   );
 }

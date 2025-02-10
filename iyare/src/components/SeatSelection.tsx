@@ -8,7 +8,7 @@ export default function SeatSelection() {
 
   const navigate = useNavigate();
   const { busId } = useParams();
-  const totalSeats = 14;
+  const totalSeats = 13;
 
   useEffect(() => {
     const fetchSeats = async () => {
@@ -49,14 +49,17 @@ export default function SeatSelection() {
         departureDate,
       };
 
-      const response = await fetch(`https://iyare-backend.onrender.com/api/book-seat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `https://iyare-backend.onrender.com/api/book-seat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const responseData = await response.json();
       if (response.ok) {

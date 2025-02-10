@@ -13,6 +13,7 @@ interface User {
 export default function BookingConfirmation() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   const busId = searchParams.get("busId");
   const seats = searchParams.get("seats");
@@ -49,6 +50,7 @@ export default function BookingConfirmation() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     const url = "https://iyare-backend.onrender.com/api/confirm-booking";
 
     try {
@@ -72,6 +74,8 @@ export default function BookingConfirmation() {
       }
     } catch (error) {
       console.error("Error processing booking:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,6 +178,12 @@ export default function BookingConfirmation() {
           Proceed to Payment
         </button>
       </form>
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,13 +16,13 @@ const Intro = () => {
   return (
     <div
       className="h-screen flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: 'url("/your-background-image.jpg")' }} // Change to your image path
+      style={{ backgroundImage: 'url("/your-background-image.jpg")' }}
     >
       {!showHome ? (
         <motion.div
-          initial={{ scale: 0 }} // Start small
-          animate={{ scale: 1 }} // Zoom in first
-          transition={{ duration: 2, ease: "easeOut" }} // Smooth zoom-in
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
           onAnimationComplete={() => {
             setTimeout(() => {
               document.getElementById("animated-div")?.classList.add("spin");

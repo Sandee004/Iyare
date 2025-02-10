@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const BookingDetails = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [searchData, setSearchData] = useState({
     travellingFrom: "",
     travellingTo: "",
@@ -18,7 +19,9 @@ const BookingDetails = () => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch("https://iyare-backend.onrender.com/api/routes");
+        const response = await fetch(
+          "https://iyare-backend.onrender.com/api/routes"
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch routes");
         }
@@ -42,6 +45,7 @@ const BookingDetails = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -68,6 +72,7 @@ const BookingDetails = () => {
       alert("Departure date cannot be in the past.");
       return;
     }
+    setIsLoading(false);
 
     navigate("/bus-selection", {
       state: {
@@ -156,6 +161,12 @@ const BookingDetails = () => {
             Search Buses
           </button>
         </form>
+      )}
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
       )}
     </div>
   );

@@ -7,7 +7,6 @@ const Home = () => {
 
   const handleBookNow = () => {
     const token = localStorage.getItem("token");
-    //const isAuthenticated = !localStorage.getItem("token"); // Directly check token
     if (!token) {
       setShowModal(true);
     } else {

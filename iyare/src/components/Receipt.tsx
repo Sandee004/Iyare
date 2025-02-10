@@ -21,7 +21,6 @@ export default function Receipt() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Try to get the receipt details from localStorage or from query params
     const storedData = localStorage.getItem("receiptData");
     if (storedData) {
       setReceiptData(JSON.parse(storedData));
