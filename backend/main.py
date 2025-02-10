@@ -117,23 +117,24 @@ def signup():
     return jsonify({"message": "User created successfully"}), 201
 
 
-@app.route("/api/login", methods=["POST"])
+@app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
-    email = data.get("email")
-    phoneNumber = data.get("phoneNumber")
+    data = request.get_json()
+    user = Users.query.filter_by(email=data['email']).first()
 
-    user = Users.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"message": "Account does not exist"}), 404
+    if user:  # Adjust based on your auth logic
+        access_token = create_access_token(identity=user.id)
+        return jsonify({
+            "access_token": access_token,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "phoneNumber": user.phone_number
+            }
+        })
 
-    if user.phoneNumber != phoneNumber:
-        return jsonify({"message": "Invalid credentials"}), 401
-
-    print("Login data gotten. Logging the user in")
-
-    access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token), 200
+    return jsonify({"message": "Invalid credentials"}), 401
 
 
 @app.route("/api/routes", methods=["GET"])
@@ -247,13 +248,6 @@ def seed_seats():
         db.session.commit()
         print("Seats seeded successfully!")
 
-@app.route("/api/debug-seats", methods=["GET"])
-def debug_seats():
-    bus_id = 1  # Adjust if needed
-    seats = Seat.query.filter(Seat.bus_id == bus_id).all()
-    
-    return jsonify({"seats": [seat.seat_number for seat in seats]})
-
 
 @app.route("/api/confirm-booking", methods=["POST"])
 def confirm_booking():
@@ -294,6 +288,28 @@ def confirm_booking():
     db.session.commit()
 
     return jsonify({"message": "Booking successful!", "booking": booking.to_dict()}), 201
+
+from flask import jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+@app.route("/api/user", methods=["GET"])
+@jwt_required()
+def get_user():
+    user_id = get_jwt_identity()  # Get the logged-in user's ID from the JWT token
+    user = Users.query.get(user_id)  # Fetch user from the database
+    
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    return jsonify({
+        "user": {
+            "name": user.name,
+            "phoneNumber": user.phone_number,
+            "nextOfKinName": user.next_of_kin_name,
+            "nextOfKinPhoneNumber": user.next_of_kin_phone_number,
+        }
+    })
+
 
 if __name__ == "__main__":
     with app.app_context():

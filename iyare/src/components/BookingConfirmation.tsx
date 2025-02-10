@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import axios from "axios";
 
 interface User {
   name: string;
@@ -27,43 +26,53 @@ export default function BookingConfirmation() {
   });
 
   useEffect(() => {
-    axios
-      .get("/api/user")
-      .then((response) => {
-        if (response.data.user) {
-          setFormData((prevData) => ({
-            ...prevData,
-            name: response.data.user.name,
-            phoneNumber: response.data.user.phoneNumber,
-            nextOfKinName: response.data.user.nextOfKinName,
-            nextOfKinPhoneNumber: response.data.user.nextOfKinPhoneNumber,
-          }));
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching user:", error);
-      });
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setFormData({
+          name: user.name || "",
+          phoneNumber: user.phoneNumber || "",
+          nextOfKinName: user.nextOfKinName || "",
+          nextOfKinPhoneNumber: user.nextOfKinPhoneNumber || "",
+        });
+      } catch (error) {
+        console.error("Error parsing stored user data:", error);
+      }
+    }
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    axios
-      .post("/api/confirm-booking", {
-        ...formData,
-        busId,
-        seats,
-        departureDate,
-      })
-      .then(() => {
-        navigate("/payment");
-      })
-      .catch((error) => {
-        console.error("Booking error:", error);
+    const url = "http://localhost:5000/api/confirm-booking";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          busId,
+          seats,
+          departureDate,
+        }),
       });
+
+      if (response.ok) {
+        navigate("/payment");
+      } else {
+        console.error("Booking failed:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error processing booking:", error);
+    }
   };
 
   return (
