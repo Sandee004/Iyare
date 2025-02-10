@@ -112,7 +112,6 @@ def signup():
     new_user = Users(**data)
     db.session.add(new_user)
     db.session.commit()
-    print("Signup data gotten and stored")
 
     return jsonify({"message": "User created successfully"}), 201
 
@@ -122,7 +121,7 @@ def login():
     data = request.get_json()
     user = Users.query.filter_by(email=data['email']).first()
 
-    if user:  # Adjust based on your auth logic
+    if user:
         access_token = create_access_token(identity=user.id)
         return jsonify({
             "access_token": access_token,
@@ -147,12 +146,11 @@ def get_routes():
     return jsonify([route.to_dict() for route in routes]), 200
 
 
-# Insert predefined routes if not in database
 def seed_routes():
     default_routes = [
-        {"departure_city": "Lagos", "destination_city": "Abuja", "price": 15000, "estimated_time": "10 hours"},
-        {"departure_city": "Abuja", "destination_city": "Port Harcourt", "price": 12000, "estimated_time": "8 hours"},
-        {"departure_city": "Kano", "destination_city": "Lagos", "price": 18000, "estimated_time": "12 hours"}
+        {"departure_city": "Lagos-Ipaja", "destination_city": "Benin city", "price": 15000, "estimated_time": "10 hours"},
+        {"departure_city": "Benin city", "destination_city": "Lagos-Ipaja", "price": 12000, "estimated_time": "8 hours"},
+        {"departure_city": "Delta", "destination_city": "Lagos-Agege", "price": 18000, "estimated_time": "12 hours"}
     ]
 
     for route in default_routes:
@@ -178,18 +176,17 @@ def get_buses(route_id):
     return jsonify([bus.to_dict() for bus in buses]), 200
 
 def seed_buses():
-    if not Bus.query.first():  # Avoid duplicate data
+    if not Bus.query.first():
         buses = [
-            {"route_id": 1, "bus_name": "ABC Travels", "total_seats": 20, "available_seats": 20, "departure_time": "Morning"},
-            {"route_id": 1, "bus_name": "XYZ Express", "total_seats": 15, "available_seats": 15, "departure_time": "Afternoon"},
-            {"route_id": 2, "bus_name": "LMN Transport", "total_seats": 18, "available_seats": 18, "departure_time": "Morning"},
-            {"route_id": 2, "bus_name": "DEF Movers", "total_seats": 25, "available_seats": 25, "departure_time": "Afternoon"},
+            {"route_id": 1, "bus_name": "Coach", "total_seats": 20, "available_seats": 20, "departure_time": "7:00am"},
+            {"route_id": 1, "bus_name": "Jet Movers", "total_seats": 14, "available_seats": 14, "departure_time": "8:30am"},
+            {"route_id": 2, "bus_name": "Hiace", "total_seats": 14, "available_seats": 14, "departure_time": "10:00am"},
+            {"route_id": 2, "bus_name": "Hiace", "total_seats": 25, "available_seats": 25, "departure_time": "12:00pm"},
         ]
         for bus in buses:
             new_bus = Bus(**bus)
             db.session.add(new_bus)
         db.session.commit()
-        print("Buses seeded successfully!")
 
 
 @app.route("/api/buses/<int:bus_id>/seats", methods=["GET"])
@@ -204,47 +201,38 @@ def get_seats(bus_id):
 @jwt_required()
 def book_seat():
     data = request.json
-    print("Received booking request:", data)  
-
     seat_numbers = data.get("seats", [])  
     bus_id = data.get("busId")
-
-    print(f"bus_id: {bus_id} (type: {type(bus_id)})")  # Debugging step
-    print(f"seat_numbers: {seat_numbers} (type: {type(seat_numbers)})")  # Debugging step
 
     if not bus_id or not seat_numbers:
         return jsonify({"message": "Missing bus ID or seats"}), 400
 
-    # Convert bus_id to integer if it's a string
     if isinstance(bus_id, str) and bus_id.isdigit():
         bus_id = int(bus_id)
 
     seats = Seat.query.filter(Seat.bus_id == bus_id, Seat.seat_number.in_(seat_numbers)).all()
 
-    print("Matching seats in DB:", seats)  # Debugging step
-
     if len(seats) != len(seat_numbers):
         return jsonify({"message": "Some seats are already booked or do not exist"}), 400
 
-    # ✅ If seats exist, update their status to 'booked'
     for seat in seats:
         seat.status = "booked"
 
     db.session.commit()
 
-    return jsonify({"message": "Seats booked successfully!"}), 200  # ✅ Always return a response
+    return jsonify({"message": "Seats booked successfully!"}), 200
 
 
 def seed_seats():
-    if not Seat.query.first():  # Avoid duplicate data
-        buses = Bus.query.all()  # Get all buses
+    if not Seat.query.first():
+        buses = Bus.query.all()
         seats = []
 
         for bus in buses:
-            for seat_number in range(1, bus.total_seats + 1):  # Create seats from 1 to total_seats
+            for seat_number in range(1, bus.total_seats + 1):
                 seats.append(Seat(bus_id=bus.id, seat_number=seat_number, status="available"))
 
-        db.session.bulk_save_objects(seats)  # Bulk insert for efficiency
+        db.session.bulk_save_objects(seats)
         db.session.commit()
         print("Seats seeded successfully!")
 
@@ -253,23 +241,21 @@ def seed_seats():
 def confirm_booking():
     data = request.json
     bus_id = data.get("busId")
-    seat_numbers = data.get("seats")  # Expecting a string: "1,2"
+    seat_numbers = data.get("seats")
     departure_date = data.get("departureDate")
 
-    # Convert departure_date from string to date object
+    
     try:
         departure_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
     except ValueError:
         return jsonify({"error": "Invalid date format"}), 400
 
-    # Check seat availability
     seat_list = seat_numbers.split(",") if seat_numbers else []
     seats = Seat.query.filter(Seat.bus_id == bus_id, Seat.seat_number.in_(seat_list)).all()
 
     if len(seats) != len(seat_list):
         return jsonify({"error": "Some seats are already booked or do not exist"}), 400
 
-    # Create a new booking record
     booking = Booking(
         user_name=data.get("name"),
         phone_number=data.get("phoneNumber"),
@@ -280,7 +266,6 @@ def confirm_booking():
         departure_date=departure_date,
     )
 
-    # Mark seats as booked
     for seat in seats:
         seat.status = "booked"
 
@@ -289,14 +274,11 @@ def confirm_booking():
 
     return jsonify({"message": "Booking successful!", "booking": booking.to_dict()}), 201
 
-from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-
 @app.route("/api/user", methods=["GET"])
 @jwt_required()
 def get_user():
-    user_id = get_jwt_identity()  # Get the logged-in user's ID from the JWT token
-    user = Users.query.get(user_id)  # Fetch user from the database
+    user_id = get_jwt_identity()
+    user = Users.query.get(user_id)
     
     if not user:
         return jsonify({"message": "User not found"}), 404

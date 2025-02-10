@@ -8,10 +8,8 @@ export default function SeatSelection() {
 
   const navigate = useNavigate();
   const { busId } = useParams();
-  console.log("Bus ID from URL:", busId);
-  const totalSeats = 14; // Adjust this based on the bus configuration
+  const totalSeats = 14;
 
-  // Fetch unavailable seats from the backend
   useEffect(() => {
     const fetchSeats = async () => {
       try {
@@ -40,19 +38,17 @@ export default function SeatSelection() {
 
   const handleContinue = async () => {
     if (selectedSeats.length === 0) return;
-  
+
     try {
       const departureDate = new Date().toISOString().split("T")[0];
       const token = localStorage.getItem("token");
-  
+
       const payload = {
         busId,
         seats: selectedSeats,
         departureDate,
       };
-  
-      console.log("Sending payload:", payload); // Add this to debug
-  
+
       const response = await fetch(`http://localhost:5000/api/book-seat`, {
         method: "POST",
         headers: {
@@ -61,10 +57,8 @@ export default function SeatSelection() {
         },
         body: JSON.stringify(payload),
       });
-  
+
       const responseData = await response.json();
-      console.log("Response:", responseData); // Add this to debug
-  
       if (response.ok) {
         navigate(
           `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
@@ -72,21 +66,21 @@ export default function SeatSelection() {
           )}&departureDate=${departureDate}`
         );
       } else {
-        alert(responseData.message || "Failed to book seats. Please try again.");
+        alert(
+          responseData.message || "Failed to book seats. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error booking seats:", error);
     }
   };
 
-  
   if (loading) {
     return <p className="text-center text-lg">Loading seats...</p>;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Navbar */}
       <nav className="mb-6">
         <Link
           to="/bus-selection"
