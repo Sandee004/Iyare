@@ -49,7 +49,7 @@ export default function BookingConfirmation() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = "http://localhost:5000/api/confirm-booking";
+    const url = "https://iyare-backend.onrender.com/api/confirm-booking";
 
     try {
       const response = await fetch(url, {

@@ -19,7 +19,7 @@ export default function Signup() {
     e.preventDefault();
     console.log("Signup Data:", formData);
 
-    const url = "http://localhost:5000/api/signup";
+    const url = "https://iyare-backend.onrender.com/api/signup";
     const options = {
       method: "POST",
       headers: {
@@ -38,13 +38,16 @@ export default function Signup() {
       }
 
       const { email, phoneNumber } = formData;
-      const loginResponse = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, phoneNumber }),
-      });
+      const loginResponse = await fetch(
+        "https://iyare-backend.onrender.com/api/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, phoneNumber }),
+        }
+      );
 
       if (loginResponse.ok) {
         const loginData = await loginResponse.json();

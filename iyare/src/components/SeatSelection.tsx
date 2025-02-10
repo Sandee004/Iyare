@@ -14,7 +14,7 @@ export default function SeatSelection() {
     const fetchSeats = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/buses/${busId}/seats`
+          `https://iyare-backend.onrender.com/api/buses/${busId}/seats`
         );
         const data = await response.json();
         setUnavailableSeats(data.unavailableSeats || []);
@@ -49,7 +49,7 @@ export default function SeatSelection() {
         departureDate,
       };
 
-      const response = await fetch(`http://localhost:5000/api/book-seat`, {
+      const response = await fetch(`https://iyare-backend.onrender.com/api/book-seat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -18,7 +18,7 @@ const BookingDetails = () => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/routes");
+        const response = await fetch("https://iyare-backend.onrender.com/api/routes");
         if (!response.ok) {
           throw new Error("Failed to fetch routes");
         }

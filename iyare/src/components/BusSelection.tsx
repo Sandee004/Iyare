@@ -32,7 +32,7 @@ const BusSelection = () => {
     const fetchBuses = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/buses/${routeId}?date=${departureDate}`
+          `https://iyare-backend.onrender.com/api/buses/${routeId}?date=${departureDate}`
         );
         if (!response.ok) {
           throw new Error("No buses available for this route.");
@@ -55,7 +55,7 @@ const BusSelection = () => {
 
   const handleContinue = () => {
     if (selectedBus) {
-      navigate(`/seat-selection/${selectedBus}`); // Remove the `state` object
+      navigate(`/seat-selection/${selectedBus}`);
     }
   };
 

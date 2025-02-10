@@ -18,7 +18,7 @@ export default function Login() {
     e.preventDefault();
     console.log("Login Data:", formData);
 
-    const url = "http://localhost:5000/api/login";
+    const url = "https://iyare-backend.onrender.com/api/login";
     const options = {
       method: "POST",
       headers: {
