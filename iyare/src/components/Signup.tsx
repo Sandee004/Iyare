@@ -18,7 +18,6 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
     setIsLoading(true);
 
     const url = "https://iyare-backend.onrender.com/api/signup";
@@ -54,7 +53,7 @@ export default function Signup() {
       if (loginResponse.ok) {
         const loginData = await loginResponse.json();
         localStorage.setItem("token", loginData.access_token);
-        localStorage.setItem("user", JSON.stringify(loginData.user));
+        localStorage.setItem("user", JSON.stringify(formData));
         navigate("/home");
       } else {
         alert(

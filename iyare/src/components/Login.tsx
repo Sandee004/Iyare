@@ -17,7 +17,6 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login Data:", formData);
     setIsLoading(true);
 
     const url = "https://iyare-backend.onrender.com/api/login";
@@ -39,13 +38,12 @@ export default function Login() {
       }
       const data = await response.json();
       localStorage.setItem("token", data.access_token);
-      console.log(localStorage.getItem("token"));
       navigate("/home");
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred. Please try again.");
     } finally {
-      setIsLoading(false); // Set loading to false after API call, regardless of success/failure
+      setIsLoading(false);
     }
   };
 

@@ -74,6 +74,8 @@ const BookingDetails = () => {
     }
     setIsLoading(false);
 
+    localStorage.setItem("departureDate", searchData.departureDate);
+    console.log(localStorage.getItem("departureDate"));
     navigate("/bus-selection", {
       state: {
         routeId: selectedRoute.id,

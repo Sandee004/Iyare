@@ -51,6 +51,8 @@ const BusSelection = () => {
 
   const handleBusSelect = (busId: number) => {
     setSelectedBus(busId);
+    localStorage.setItem("busId", busId.toString());
+    console.log(localStorage.getItem("busId"));
   };
 
   const handleContinue = () => {

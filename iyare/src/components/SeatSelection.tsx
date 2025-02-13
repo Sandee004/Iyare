@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function SeatSelection() {
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
@@ -7,7 +7,7 @@ export default function SeatSelection() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { busId } = useParams();
+  const busId = useMemo(() => localStorage.getItem("busId") || {}, []);
   const totalSeats = 13;
 
   useEffect(() => {
@@ -63,6 +63,7 @@ export default function SeatSelection() {
 
       const responseData = await response.json();
       if (response.ok) {
+        localStorage.setItem("selecctedseat", JSON.stringify(selectedSeats));
         navigate(
           `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
             ","

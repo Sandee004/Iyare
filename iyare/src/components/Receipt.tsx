@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -18,20 +18,23 @@ export default function Receipt() {
     departureDate: "",
   });
 
-  const [searchParams] = useSearchParams();
+  //const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const storedData = localStorage.getItem("receiptData");
-    if (storedData) {
-      setReceiptData(JSON.parse(storedData));
+    const storedUserDetails = localStorage.getItem("user");
+    const storedReceiptData = localStorage.getItem("receiptData");
+
+    if (storedReceiptData) {
+      setReceiptData(JSON.parse(storedReceiptData));
     } else {
+      const user = storedUserDetails ? JSON.parse(storedUserDetails) : {};
       setReceiptData({
-        name: searchParams.get("name") || "",
-        seats: searchParams.get("seats") || "",
-        departureDate: searchParams.get("departureDate") || "",
+        name: user.name || "",
+        seats: localStorage.getItem("selectedSeats") || "",
+        departureDate: localStorage.getItem("departureDate") || "",
       });
     }
-  }, [searchParams]);
+  }, []);
 
   const downloadReceipt = () => {
     const receiptElement = document.getElementById("receipt-content");
