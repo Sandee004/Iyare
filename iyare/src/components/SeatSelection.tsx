@@ -7,17 +7,27 @@ export default function SeatSelection() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const busId = useMemo(() => localStorage.getItem("busId") || {}, []);
+  const busId = useMemo(() => localStorage.getItem("busId") || "", []);
   const totalSeats = 13;
+
+  interface Seat {
+    status: string;
+    seat_number: string;
+  }
 
   useEffect(() => {
     const fetchSeats = async () => {
+      if (!busId) return;
       try {
         const response = await fetch(
           `https://iyare-backend.onrender.com/api/buses/${busId}/seats`
         );
         const data = await response.json();
-        setUnavailableSeats(data.unavailableSeats || []);
+
+        const bookedSeats = data
+          .filter((seat: Seat) => seat.status === "booked")
+          .map((seat: Seat) => parseInt(seat.seat_number, 10));
+        setUnavailableSeats(bookedSeats);
       } catch (error) {
         console.error("Error fetching seats:", error);
       } finally {
@@ -40,13 +50,39 @@ export default function SeatSelection() {
     if (selectedSeats.length === 0) return;
 
     try {
-      const departureDate = new Date().toISOString().split("T")[0];
       const token = localStorage.getItem("token");
+
+      // Re-check seat availability before booking
+      const checkAvailability = await fetch(
+        `https://iyare-backend.onrender.com/api/buses/${busId}/seats`
+      );
+      const seatData = await checkAvailability.json();
+
+      const unavailableSeatNumbers: number[] = seatData
+        .filter(
+          (seat: { status: string; seat_number: string }) =>
+            seat.status === "booked"
+        )
+        .map((seat: { seat_number: string }) => parseInt(seat.seat_number, 10));
+
+      const conflictingSeats = selectedSeats.filter((seat) =>
+        unavailableSeatNumbers.includes(seat)
+      );
+
+      if (conflictingSeats.length > 0) {
+        alert(
+          `Sorry, the following seats are no longer available: ${conflictingSeats.join(
+            ", "
+          )}. Please select other seats.`
+        );
+        setUnavailableSeats(unavailableSeatNumbers);
+        return;
+      }
 
       const payload = {
         busId,
         seats: selectedSeats,
-        departureDate,
+        departureDate: new Date().toISOString().split("T")[0],
       };
 
       const response = await fetch(
@@ -67,7 +103,7 @@ export default function SeatSelection() {
         navigate(
           `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
             ","
-          )}&departureDate=${departureDate}`
+          )}&departureDate=${payload.departureDate}`
         );
       } else {
         alert(
@@ -108,7 +144,11 @@ export default function SeatSelection() {
           <div></div>
           <button
             className={`w-12 h-12 rounded-md ${
-              selectedSeats.includes(1) ? "bg-green-500" : "bg-gray-300"
+              unavailableSeats.includes(1)
+                ? "bg-red-500 cursor-not-allowed"
+                : selectedSeats.includes(1)
+                ? "bg-green-500"
+                : "bg-gray-300 hover:bg-gray-400"
             }`}
             onClick={() => handleSeatSelect(1)}
             disabled={unavailableSeats.includes(1)}

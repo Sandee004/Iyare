@@ -198,7 +198,7 @@ export default function Receipt() {
       </PDFDownloadLink>
 
       <Link
-        to="/"
+        to="/home"
         className="block text-center mt-4 text-red-600 font-semibold hover:underline"
       >
         Return Home
