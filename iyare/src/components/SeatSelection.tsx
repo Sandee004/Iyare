@@ -63,7 +63,7 @@ export default function SeatSelection() {
 
       const responseData = await response.json();
       if (response.ok) {
-        localStorage.setItem("selecctedseat", JSON.stringify(selectedSeats));
+        localStorage.setItem("selectedseat", JSON.stringify(selectedSeats));
         navigate(
           `/booking-confirmation?busId=${busId}&seats=${selectedSeats.join(
             ","

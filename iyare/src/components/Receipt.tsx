@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  PDFDownloadLink,
+} from "@react-pdf/renderer";
 
 interface ReceiptData {
   name: string;
@@ -11,14 +17,103 @@ interface ReceiptData {
   departureDate: string;
 }
 
+// Create the PDF Document component
+// Adjust the ReceiptDocument component
+const ReceiptDocument = ({ receiptData }: { receiptData: ReceiptData }) => (
+  <Document>
+    <Page
+      size={{ width: 216, height: 140 }} // Medium size, between A4 and receipt size
+      style={styles.page}
+    >
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Iyare Group of Motors</Text>
+        <Text style={styles.subTitle}>Your Trusted Travel Partner</Text>
+      </View>
+
+      {/* Line Separator */}
+      <View style={styles.line} />
+
+      {/* Details Section */}
+      <View style={styles.section}>
+        <Text style={styles.text}>
+          <Text style={styles.label}>Passenger Name:</Text> {receiptData.name}
+        </Text>
+        <Text style={styles.text}>
+          <Text style={styles.label}>Seat Number(s):</Text> {receiptData.seats}
+        </Text>
+        <Text style={styles.text}>
+          <Text style={styles.label}>Departure Date:</Text>{" "}
+          {receiptData.departureDate}
+        </Text>
+      </View>
+
+      {/* Line Separator */}
+      <View style={styles.line} />
+
+      {/* Footer Section */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          Please present this receipt at the boarding station.
+        </Text>
+      </View>
+    </Page>
+  </Document>
+);
+
+const styles = StyleSheet.create({
+  page: {
+    paddingVertical: 10,
+    paddingHorizontal: 5, // Adds padding for cleaner look
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  header: {
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "red",
+  },
+  subTitle: {
+    fontSize: 9,
+    color: "gray",
+  },
+  section: {
+    marginVertical: 5,
+    paddingHorizontal: 5,
+  },
+  text: {
+    fontSize: 10,
+    marginBottom: 2,
+  },
+  label: {
+    fontWeight: "bold",
+  },
+  line: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    marginVertical: 5,
+  },
+  footer: {
+    textAlign: "center",
+    marginTop: 5,
+  },
+  footerText: {
+    fontSize: 9,
+    color: "gray",
+  },
+});
+
 export default function Receipt() {
   const [receiptData, setReceiptData] = useState<ReceiptData>({
     name: "",
     seats: "",
     departureDate: "",
   });
-
-  //const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const storedUserDetails = localStorage.getItem("user");
@@ -30,23 +125,11 @@ export default function Receipt() {
       const user = storedUserDetails ? JSON.parse(storedUserDetails) : {};
       setReceiptData({
         name: user.name || "",
-        seats: localStorage.getItem("selectedSeats") || "",
+        seats: localStorage.getItem("selectedseat") || "",
         departureDate: localStorage.getItem("departureDate") || "",
       });
     }
   }, []);
-
-  const downloadReceipt = () => {
-    const receiptElement = document.getElementById("receipt-content");
-    if (!receiptElement) return;
-
-    html2canvas(receiptElement).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, "PNG", 10, 10, 180, 100);
-      pdf.save("booking-receipt.pdf");
-    });
-  };
 
   return (
     <div className="max-w-lg mx-auto p-6 border rounded-lg shadow-lg mt-10 bg-white">
@@ -78,12 +161,22 @@ export default function Receipt() {
         </p>
       </div>
 
-      <button
-        onClick={downloadReceipt}
-        className="mt-6 w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700 transition"
+      <PDFDownloadLink
+        document={<ReceiptDocument receiptData={receiptData} />}
+        fileName="booking-receipt.pdf"
       >
-        Download Receipt
-      </button>
+        {({ loading }) =>
+          loading ? (
+            <button className="mt-6 w-full bg-gray-400 text-white py-2 rounded-md font-semibold">
+              Preparing Document...
+            </button>
+          ) : (
+            <button className="mt-6 w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700 transition">
+              Download Receipt
+            </button>
+          )
+        }
+      </PDFDownloadLink>
 
       <Link
         to="/"
