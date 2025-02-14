@@ -6,6 +6,7 @@ import {
   Document,
   Page,
   Text,
+  Image,
   View,
   StyleSheet,
   PDFDownloadLink,
@@ -25,6 +26,11 @@ const ReceiptDocument = ({ receiptData }: { receiptData: ReceiptData }) => (
       size={{ width: 216, height: 140 }} // Medium size, between A4 and receipt size
       style={styles.page}
     >
+      <Image
+        src="https://media.istockphoto.com/id/1188198006/photo/a-rent-bus-is-drive.jpg?s=1024x1024&w=is&k=20&c=zb8W2qscsro1KG1ZwI_pCD9Kcc7_ZDGYfSTXd_sjjMk=" // Replace with your image URL or local path
+        style={styles.backgroundImage}
+      />
+
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.title}>Iyare Group of Motors</Text>
@@ -63,11 +69,21 @@ const ReceiptDocument = ({ receiptData }: { receiptData: ReceiptData }) => (
 
 const styles = StyleSheet.create({
   page: {
+    backgroundColor: "black",
     paddingVertical: 10,
     paddingHorizontal: 5, // Adds padding for cleaner look
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
+  },
+  backgroundImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: -1, // Send image behind the text
+    opacity: 0.2, // Make it subtle for readability
   },
   header: {
     textAlign: "center",
@@ -85,13 +101,16 @@ const styles = StyleSheet.create({
   section: {
     marginVertical: 5,
     paddingHorizontal: 5,
+    color: "white",
   },
   text: {
     fontSize: 10,
     marginBottom: 2,
+    color: "white",
   },
   label: {
     fontWeight: "bold",
+    color: "white",
   },
   line: {
     borderBottomWidth: 1,
